@@ -10,8 +10,8 @@ dt = 0.01
 duration = 3
 time = np.linspace(0, duration, int(duration / dt))
 
-calculated_distances = [p.calculate_distance(10, 4, t, False) for t in time]
-calculated_velocities = [p.calculate_distance(10, 4, t, True) for t in time]
+calculated_distances = [p.calculate_distance(10, 8, 2, t, False) for t in time]
+calculated_velocities = [p.calculate_distance(10, 8, 2, t, True) for t in time]
 
 
 plt.plot(time, calculated_distances)

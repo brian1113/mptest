@@ -16,28 +16,31 @@ class Profile:
 
 
 class Trapezoid(Profile):
-    def calculate_distance(self, max_vel, max_accel, elapsed_time, velocity):
+    def calculate_distance(self, max_vel, max_accel, max_decel, elapsed_time, velocity):
         init_pose = self.initial_state.pose
         d = self.pose_delta
         init_vel = self.initial_state.vel
         final_vel = self.final_state.vel
 
         # the farthest position to reach before deceleration is needed
-        decel_point = d / 2 + (final_vel ** 2 - init_vel ** 2) / (4 * max_accel)
+        if init_vel < final_vel:
+            d1 = (final_vel ** 2 - init_vel ** 2) / (2 * max_accel)
+            decel_point = d1 + (d - d1) * max_decel / (max_accel + max_decel)
+        else:
+            d1 = (init_vel ** 2 - final_vel ** 2) / (2 * max_decel)
+            decel_point = (d - d1) * max_decel / (max_accel + max_decel)
 
         accel_t = max_vel / max_accel - init_vel / max_accel
         accel_d = init_vel * accel_t + 0.5 * max_accel * accel_t ** 2
 
         if accel_d > decel_point:
-            print('yes')
             accel_d = decel_point
-            # watch out for edge case where init_vel > max_vel
+            # TODO: consider edge case where init_vel > max_vel
             max_vel = math.sqrt(init_vel ** 2 + 2 * max_accel * decel_point)
             accel_t = max_vel / max_accel - init_vel / max_accel
 
-
-        decel_t = max_vel / max_accel - final_vel / max_accel
-        decel_d = final_vel * decel_t + 0.5 * max_accel * decel_t ** 2
+        decel_t = max_vel / max_decel - final_vel / max_decel
+        decel_d = final_vel * decel_t + 0.5 * max_decel * decel_t ** 2
 
         cruise_d = d - accel_d - decel_d
         cruise_t = cruise_d / max_vel
@@ -64,11 +67,11 @@ class Trapezoid(Profile):
         else:
             current_decel_t = elapsed_time - decel_start
             if velocity:
-                return init_vel + max_accel * accel_t - max_accel * current_decel_t
+                return init_vel + max_accel * accel_t - max_decel * current_decel_t
             return (
                     init_pose
                     + accel_d
                     + cruise_d
                     + max_vel * current_decel_t
-                    - 0.5 * max_accel * current_decel_t ** 2
+                    - 0.5 * max_decel * current_decel_t ** 2
             )
