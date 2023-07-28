@@ -22,16 +22,20 @@ class Trapezoid(Profile):
         init_vel = self.initial_state.vel
         final_vel = self.final_state.vel
 
-        # the maximum velocity the motion profile can reach before it needs to start decelerating
-        vel_limit = math.sqrt(init_vel ** 2 + max_accel * d) + (final_vel - init_vel) / 2
-        print(vel_limit)
+        # the farthest position to reach before deceleration is needed
+        decel_point = d / 2 + (final_vel ** 2 - init_vel ** 2) / (4 * max_accel)
 
-        if max_vel > vel_limit:
-            max_vel = vel_limit
-
-        # watch out for edge case where init_vel > max_vel
         accel_t = max_vel / max_accel - init_vel / max_accel
         accel_d = init_vel * accel_t + 0.5 * max_accel * accel_t ** 2
+
+        if accel_d > decel_point:
+            print('yes')
+            accel_d = decel_point
+            # watch out for edge case where init_vel > max_vel
+            max_vel = math.sqrt(init_vel ** 2 + 2 * max_accel * decel_point)
+            accel_t = max_vel / max_accel - init_vel / max_accel
+
+
         decel_t = max_vel / max_accel - final_vel / max_accel
         decel_d = final_vel * decel_t + 0.5 * max_accel * decel_t ** 2
 
